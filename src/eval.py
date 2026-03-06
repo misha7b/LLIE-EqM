@@ -22,7 +22,7 @@ ETA = 2e-2
 METHOD = "gd"        
 
 
-MODE = "single"
+MODE = "dataset" # single, folder, dataset
 IMG_PATH = "datasets/custom/pool.png"       # used by "single"
 IMG_DIR = "datasets/custom"                 # used by "folder"
 DATA_ROOT = "datasets/LOL"                  # used by "dataset"
