@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+*.pt
+outputs/*
+!outputs/.gitkeep
+checkpoints/*
+!checkpoints/.gitkeep
+datasets/LOL/
+datasets/custom/
+.DS_Store
