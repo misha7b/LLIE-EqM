@@ -6,40 +6,53 @@ import glob
 import torch
 from torchvision import transforms as T
 from torchmetrics.image import PeakSignalNoiseRatio, StructuralSimilarityIndexMeasure
+import torch.nn.functional as F
 from PIL import Image
 
 from src.unet.unet_model import UNet
+from src.nafnet.nafnet_arch import NAFNet
+from src.ddpm_unet import DDPMUNet
+from src.tiny_unet.unet import TinyUNet
+
 from datasets.lol_dataset import LOLPairedDataset
 
 
 # ── Config ────────────────────────────────────────────────────────────
-MODEL_PATH = "outputs/eqm_lol.pt"
+MODEL_PATH = "checkpoints/best_lol_unet_donotdelete.pt"
 SAVE_DIR = "outputs/eval"
 
 # Generation
-NUM_STEPS = 30
-ETA = 2e-2
-METHOD = "gd"        
+NUM_STEPS = 12 #12
+MOMENTUM = 0.9
+ETA = 2e-2   #2e-2
+METHOD = "gd"   # "gd" "heavy_ball" "nesterov"   
 
 
-MODE = "dataset" # single, folder, dataset
-IMG_PATH = "datasets/custom/pool.png"       # used by "single"
+MODE = "single" # "single" "folder" "dataset"
+IMG_PATH = "datasets/custom/9.png"       # used by "single"
 IMG_DIR = "datasets/custom"                 # used by "folder"
 DATA_ROOT = "datasets/LOL"                  # used by "dataset"
+#DATA_ROOT = "datasets/Lol-v2/Real_captured"
 
-SAVE_STEPS = True      
+SAVE_STEPS = True
 SAVE_COMPARISON = True
 # ──────────────────────────────────────────────────────────────────────
 
-
 @torch.no_grad()
-def generate_gd(model, x_dark, num_steps=NUM_STEPS, eta=ETA, save_steps=False):
+def generate_gd(model, x_dark, num_steps=NUM_STEPS, eta=ETA, save_steps=False, stop_threshold=1e-3):
+    """Gradient Descent"""
     y = x_dark.clone()
     x_k = x_dark.clone()
     history = [x_k.cpu().clone()] if save_steps else None
 
     for step in range(num_steps):
+        
         pred_grad = model(torch.cat([x_k, y], dim=1))
+        
+        # DDPM
+        #gamma_val = torch.full((x_k.shape[0],), step / num_steps, device=x_k.device)
+        #pred_grad = model(torch.cat([x_k, y], dim=1), gamma_val)
+        
         x_k = (x_k - eta * pred_grad).clamp(0.0, 1.0)
 
         if save_steps:
@@ -50,14 +63,83 @@ def generate_gd(model, x_dark, num_steps=NUM_STEPS, eta=ETA, save_steps=False):
 
     return x_k, history
 
+@torch.no_grad()
+def generate_heavy_ball(model, x_dark, num_steps=NUM_STEPS, eta=ETA,
+                        momentum=MOMENTUM, save_steps=False):
+    """Heavy Ball"""
+    y = x_dark.clone()
+    x_k = x_dark.clone()
+    v = torch.zeros_like(x_k)
+    history = [x_k.cpu().clone()] if save_steps else None
+
+    for step in range(num_steps):
+        pred_grad = model(torch.cat([x_k, y], dim=1))
+        v = momentum * v - eta * pred_grad
+        x_k = (x_k + v).clamp(0.0, 1.0)
+
+        if save_steps:
+            history.append(x_k.cpu().clone())
+
+    return x_k, history
+
+
+@torch.no_grad()
+def generate_nesterov(model, x_dark, num_steps=NUM_STEPS, eta=ETA,
+                      momentum=MOMENTUM, save_steps=False):
+    """Nesterov accelerated gradient"""
+    y = x_dark.clone()
+    x_k = x_dark.clone()
+    v = torch.zeros_like(x_k)
+    history = [x_k.cpu().clone()] if save_steps else None
+
+    for step in range(num_steps):
+        # Look-ahead position
+        x_lookahead = (x_k + momentum * v).clamp(0.0, 1.0)
+        pred_grad = model(torch.cat([x_lookahead, y], dim=1))
+
+        v = momentum * v - eta * pred_grad
+        x_k = (x_k + v).clamp(0.0, 1.0)
+
+        if save_steps:
+            history.append(x_k.cpu().clone())
+
+    return x_k, history
+
+
+
+GENERATION_METHODS = {
+    "gd": generate_gd,
+    "heavy_ball": generate_heavy_ball,
+    "nesterov": generate_nesterov,
+}
+
+
 def generate(model, x_dark, save_steps=False):
-    return generate_gd(model, x_dark, NUM_STEPS, ETA, save_steps=save_steps)
+    """Dispatch to the configured generation method."""
+    fn = GENERATION_METHODS[METHOD]
+    kwargs = dict(num_steps=NUM_STEPS, eta=ETA, save_steps=save_steps)
+    if METHOD in ("heavy_ball", "nesterov"):
+        kwargs["momentum"] = MOMENTUM
+    return fn(model, x_dark, **kwargs)
 
 
 
 def load_model(model_path, device):
+    
     model = UNet(n_channels=6, n_classes=3).to(device)
-    model.load_state_dict(torch.load(model_path, map_location=device))
+    #model = NAFNet(img_channel=6, out_channel=3, width=32, enc_blk_nums=[1, 1, 1, 28], dec_blk_nums=[1, 1, 1, 1]).to(device)
+    #model = DDPMUNet(image_channels=6, out_channels=3, n_channels=64).to(device)
+    #model = TinyUNet(in_ch=6, out_ch=3, base=16).to(device)
+    
+    obj = torch.load(model_path, map_location=device)
+    
+    if "model_state_dict" in obj:
+        model.load_state_dict(obj["model_state_dict"])
+        print(f"Loaded checkpoint from {model_path} (epoch={obj.get('epoch', 'unknown')})")
+    else:
+        model.load_state_dict(obj)
+        print(f"Loaded weights from {model_path}")
+    
     model.eval()
     print(f"Loaded model from {model_path}")
     return model
@@ -103,8 +185,16 @@ def run_single(model, device):
     x_dark_pil = Image.open(IMG_PATH).convert("RGB")
     x_dark = T.ToTensor()(x_dark_pil).unsqueeze(0).to(device)
     print(f"Input: {IMG_PATH} — {x_dark.shape}")
+    
+    # dehaze
+    #x_dark = 1.0 - x_dark
 
     result, history = generate(model, x_dark, save_steps=SAVE_STEPS)
+    
+    #result = 1.0 - result
+    #if history is not None:
+    #    history = [1.0 - h for h in history]
+    
     name = os.path.splitext(os.path.basename(IMG_PATH))[0]
     save_outputs(SAVE_DIR, name, x_dark_pil, result, history)
     print(f"Saved to {SAVE_DIR}")
@@ -132,6 +222,11 @@ def run_folder(model, device):
 def run_dataset(model, device):
     """Evaluate on LOL with PSNR and SSIM metrics."""
     test_dataset = LOLPairedDataset(root_dir=DATA_ROOT, split="test")
+    
+    #V2_SPLITS = {"train": "Train", "test": "Test"}
+    #test_dataset = LOLPairedDataset(root_dir=DATA_ROOT, split="test",
+    #                                splits=V2_SPLITS, low_folder="Input", high_folder="GT")
+    
     print(f"Evaluating on {len(test_dataset)} test pairs")
 
     psnr_fn = PeakSignalNoiseRatio(data_range=1.0).to(device)
@@ -164,6 +259,26 @@ def run_dataset(model, device):
     avg_ssim = sum(ssim_vals) / len(ssim_vals)
     print(f"\nResults — PSNR: {avg_psnr:.2f} dB | SSIM: {avg_ssim:.4f}")
     
+
+@torch.no_grad()
+def evaluate_loader(model, loader, device):
+    model.eval()
+
+    psnr_fn = PeakSignalNoiseRatio(data_range=1.0).to(device)
+    ssim_fn = StructuralSimilarityIndexMeasure(data_range=1.0).to(device)
+
+    psnr_vals, ssim_vals = [], []
+
+    for x_light, x_dark in loader:
+        x_light = x_light.to(device)
+        x_dark = x_dark.to(device)
+
+        result, _ = generate(model, x_dark, save_steps=False)
+
+        psnr_vals.append(psnr_fn(result, x_light).item())
+        ssim_vals.append(ssim_fn(result, x_light).item())
+
+    return sum(psnr_vals) / len(psnr_vals), sum(ssim_vals) / len(ssim_vals)
 
 # ── Main ──────────────────────────────────────────────────────────────
 
