@@ -18,7 +18,7 @@ from datasets.lol_dataset import LOLPairedDataset
 
 
 # ── Config ────────────────────────────────────────────────────────────
-MODEL_PATH = "checkpoints/best_lol_unet_donotdelete.pt"
+MODEL_PATH = "checkpoints/eqm_llie.pt"
 SAVE_DIR = "outputs/eval"
 
 # Generation
@@ -28,13 +28,13 @@ ETA = 2e-2   #2e-2
 METHOD = "gd"   # "gd" "heavy_ball" "nesterov"   
 
 
-MODE = "single" # "single" "folder" "dataset"
+MODE = "dataset" # "single" "folder" "dataset"
 IMG_PATH = "datasets/custom/9.png"       # used by "single"
 IMG_DIR = "datasets/custom"                 # used by "folder"
 DATA_ROOT = "datasets/LOL"                  # used by "dataset"
 #DATA_ROOT = "datasets/Lol-v2/Real_captured"
 
-SAVE_STEPS = True
+SAVE_STEPS = False
 SAVE_COMPARISON = True
 # ──────────────────────────────────────────────────────────────────────
 

@@ -139,7 +139,7 @@ def main():
         
 
     # Save
-    model_path = os.path.join(CHECKPOINT_DIR, "lol400_unet.pt")
+    model_path = os.path.join(CHECKPOINT_DIR, "lol300_unet.pt")
     torch.save(model.state_dict(), model_path)
     print(f"Saved to {model_path}")
 
