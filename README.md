@@ -22,3 +22,15 @@ src/
 datasets/
   paired_dataset.py   LOL dataset loader
 ```
+
+## Output Examples
+
+<p align="center">
+  <img src="outputs/dark_8.png" alt="Low-light example 8" width="45%" />
+  <img src="outputs/light_8.png" alt="Enhanced example 8" width="45%" />
+</p>
+
+<p align="center">
+  <img src="outputs/dark_9.png" alt="Low-light example 9" width="45%" />
+  <img src="outputs/light_9.png" alt="Enhanced example 9" width="45%" />
+</p>
