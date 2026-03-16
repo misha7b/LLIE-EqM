@@ -5,7 +5,7 @@ Equilibrium Matching (EqM+) applied to paired low-light/normal-light image data.
 ## Architecture
 
 <p align="center">
-  <img src="outputs/eqmnet.svg" alt="EqM+ Architecture" width="100%" />
+  <img src="img/eqmnet.svg" alt="EqM+ Architecture" width="100%" />
 </p>
 
 ## Usage
@@ -33,11 +33,11 @@ datasets/
 ## Output Examples
 
 <p align="center">
-  <img src="outputs/8_comparison.png" alt="Comparison example 8" width="48%" />
-  <img src="outputs/9_comparison.png" alt="Comparison example 9" width="48%" />
+  <img src="img/8_comparison.png" alt="Comparison example 8" width="48%" />
+  <img src="img/9_comparison.png" alt="Comparison example 9" width="48%" />
 </p>
 
 <p align="center">
-  <img src="outputs/18_comparison.png" alt="Comparison example 18" width="48%" />
-  <img src="outputs/101_comparison.png" alt="Comparison example 101" width="48%" />
+  <img src="img/18_comparison.png" alt="Comparison example 18" width="48%" />
+  <img src="img/101_comparison.png" alt="Comparison example 101" width="48%" />
 </p>
