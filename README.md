@@ -1,13 +1,20 @@
 # Equilibrium Matching for Low-Light Image Enhancement
 
-Equilibrium Matching (EqM) applied to paired low-light/normal-light image data, using a U-Net to learn the energy gradient field.
+Equilibrium Matching (EqM+) applied to paired low-light/normal-light image data.
+
+## Architecture
+
+<p align="center">
+  <img src="outputs/eqmnet.svg" alt="EqM+ Architecture" width="100%" />
+</p>
+
 ## Usage
 
 ```bash
-# Train on LOL dataset
+# Train
 python -m src.train
 
-# Evaluate 
+# Evaluate
 python -m src.eval
 ```
 
@@ -17,20 +24,20 @@ python -m src.eval
 src/
   train.py    Training loop
   eval.py     Inference & evaluation
-  loss.py    
-  unet/       U-Net architecture 
+  loss.py
+  eqmnet.py   Architecture
 datasets/
-  paired_dataset.py   LOL dataset loader
+  paired_dataset.py    Dataset loader
 ```
 
 ## Output Examples
 
 <p align="center">
-  <img src="outputs/dark_8.png" alt="Low-light example 8" width="45%" />
-  <img src="outputs/light_8.png" alt="Enhanced example 8" width="45%" />
+  <img src="outputs/8_comparison.png" alt="Comparison example 8" width="48%" />
+  <img src="outputs/9_comparison.png" alt="Comparison example 9" width="48%" />
 </p>
 
 <p align="center">
-  <img src="outputs/dark_9.png" alt="Low-light example 9" width="45%" />
-  <img src="outputs/light_9.png" alt="Enhanced example 9" width="45%" />
+  <img src="outputs/18_comparison.png" alt="Comparison example 18" width="48%" />
+  <img src="outputs/101_comparison.png" alt="Comparison example 101" width="48%" />
 </p>
