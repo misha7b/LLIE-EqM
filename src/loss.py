@@ -2,6 +2,7 @@
 
 import torch
 import torch.nn as nn
+import torch.fft
 
 
 def c_gamma_linear(gamma, lambda_mult=1.0, **kwargs):
@@ -51,19 +52,51 @@ class CharbonnierLoss(nn.Module):
         return torch.mean(torch.sqrt((pred - target) ** 2 + self.eps_sq))
 
 
+class FFTLoss(nn.Module):
+    """L1 loss on 2D FFT amplitude spectrum."""
+
+    def forward(self, pred, target):
+        pred_amp = torch.fft.rfft2(pred, norm="ortho").abs()
+        target_amp = torch.fft.rfft2(target, norm="ortho").abs()
+        return torch.mean(torch.abs(pred_amp - target_amp))
+
+
+class CosineLoss(nn.Module):
+    """1 - cosine similarity across the channel dim, averaged per pixel."""
+
+    def __init__(self, eps=1e-8):
+        super().__init__()
+        self.eps = eps
+
+    def forward(self, pred, target):
+        dot = (pred * target).sum(dim=1)                # (B, H, W)
+        norm_p = pred.norm(dim=1).clamp(min=self.eps)   # (B, H, W)
+        norm_t = target.norm(dim=1).clamp(min=self.eps)
+        cos_sim = dot / (norm_p * norm_t)
+        return torch.mean(1.0 - cos_sim)
+
+
 # ── EqM Loss ──────────────────────────────────────────────────────────
 
 class EqMLoss(nn.Module):
-    """Equilibrium Matching training loss"""
+    """Equilibrium Matching training loss.
+
+    Args:
+        lambda_fft:  Weight for FFT amplitude loss (0 to disable).
+        lambda_cos:  Weight for cosine direction loss (0 to disable).
+    """
 
     def __init__(self, variant="truncated", lambda_mult=4.0, a=0.8, b=2.0,
-                 loss_type="charbonnier", gamma_sampling="uniform"):
+                 loss_type="charbonnier", gamma_sampling="uniform",
+                 lambda_fft=0.0, lambda_cos=0.0):
         super().__init__()
         self.variant = variant
         self.lambda_mult = lambda_mult
         self.a = a
         self.b = b
         self.gamma_sampling = gamma_sampling
+        self.lambda_fft = lambda_fft
+        self.lambda_cos = lambda_cos
 
         if loss_type == "mse":
             self.criterion = nn.MSELoss()
@@ -71,6 +104,11 @@ class EqMLoss(nn.Module):
             self.criterion = CharbonnierLoss()
         else:
             raise ValueError(f"Unknown loss_type: {loss_type}")
+
+        if lambda_fft > 0:
+            self.fft_loss = FFTLoss()
+        if lambda_cos > 0:
+            self.cos_loss = CosineLoss()
 
     def _sample_gamma(self, B, device):
         if self.gamma_sampling == "uniform":
@@ -95,10 +133,15 @@ class EqMLoss(nn.Module):
 
         pred = model(torch.cat([x_gamma, x_dark], dim=1))
         
-        
+        #pred = model(torch.cat([x_gamma, x_dark], dim=1), gamma.view(B))
+
         loss = self.criterion(pred, target)
 
-  
+        if self.lambda_fft > 0:
+            loss = loss + self.lambda_fft * self.fft_loss(pred, target)
+        if self.lambda_cos > 0:
+            loss = loss + self.lambda_cos * self.cos_loss(pred, target)
+
         return loss
     
 
