@@ -1,13 +1,11 @@
 # EqM+ for Low-Light Image Enhancement
 
-This repository contains the EqM+ model from the report *On Flow-Based Generative Modelling and its Applications* (`flow_based_generative_modelling.pdf`, source in `main.tex`).
-
-EqM+ adapts Equilibrium Matching to paired low-light image enhancement: given a dark image and its well-lit target, it learns a descent field that iteratively moves the dark input toward the clean image.
+EqM+ adapts [Equilibrium Matching](https://arxiv.org/abs/2510.02300) to paired low-light image enhancement: given a dark image and its well-lit target, it learns a descent field that iteratively moves the dark input toward the clean image.
 
 ## Architecture
 
 <p align="center">
-  <img src="img/eqmnet.svg" alt="EqM+ Architecture" width="100%" />
+  <img src="img/eqmnet.svg" alt="EqM+ Architecture" width="50%" />
 </p>
 
 ## Method Summary
@@ -22,7 +20,6 @@ The implementation in this repo uses a compact EqMNet v2 backbone (`eqmnet2_smal
 - post-upsampling smoothing to reduce checkerboard artifacts
 - a truncated EqM decay with Charbonnier, FFT, and cosine-direction losses
 
-In the report, EqM+ is evaluated on LOL / LOL-v2 and benchmarked on surgical endoscopy data.
 
 ## Endoscopy Benchmarks
 
@@ -35,11 +32,9 @@ Reported results on the EndoVis17 and EndoVis18 low-light surgical endoscopy dat
 | LighTDiff | 34.28 | 0.957 | 31.99 | 0.949 |
 | EqM+ (ours) | 30.20 | 0.934 | 28.51 | 0.926 |
 
-EqM+ is competitive on both endoscopy benchmarks and clearly outperforms classical enhancement baselines in the reported experiments.
+EqM+ is competitive on both endoscopy benchmarks.
 
 ## Running The Code
-
-The training and evaluation scripts are configuration-driven. Before running them, set dataset roots, checkpoint paths, and evaluation mode in the constants at the top of each script.
 
 ```bash
 # Train EqM / EqM+
@@ -47,21 +42,15 @@ python -m src.train
 
 # Evaluate on a paired dataset, a folder, or a single image
 python -m src.eval
-```
 
-Current defaults in the code use:
 
-- `AdamW` with cosine annealing in [`src/train.py`](src/train.py)
-- the `eqmnet2_small` backbone in [`src/eqmnet.py`](src/eqmnet.py)
-- `12` descent steps with step size `2e-2` in [`src/eval.py`](src/eval.py)
-- the paired dataset loader in [`datasets/lol_dataset.py`](datasets/lol_dataset.py)
 
 ## Repository Layout
 
 ```text
 src/
   train.py            Training loop
-  eval.py             Inference and quantitative evaluation
+  eval.py             Inference and evaluation
   loss.py             EqM / EqM+ losses
   eqmnet.py           Default EqM+ backbone (`eqmnet2_small`)
 datasets/
@@ -82,6 +71,4 @@ img/
   <img src="img/101_comparison.png" alt="Comparison example 101" width="48%" />
 </p>
 
-## Reference
 
-For the full derivation, experimental discussion, and additional qualitative results, see `flow_based_generative_modelling.pdf` and `main.tex`.
