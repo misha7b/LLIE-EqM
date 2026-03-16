@@ -12,14 +12,7 @@ EqM+ adapts [Equilibrium Matching](https://arxiv.org/abs/2510.02300) to paired l
 
 For a paired sample `(x_dark, x_gt)`, EqM+ samples an interpolated state between the low-light image and the target image, and trains a network `v_theta(x_gamma, x_dark)` to predict a scaled direction from `x_gt` back to `x_dark`. At inference time, enhancement starts from `x_dark` itself and applies a small number of gradient-descent steps in the learned field.
 
-The implementation in this repo uses a compact EqMNet v2 backbone (`eqmnet2_small`, about `1.3M` parameters) with:
-
-- a dual-input formulation based on the current iterate and the original dark image
-- a lightweight dark-image encoder whose features are reused across descent steps
-- multi-scale fusion with bottleneck self-attention and cross-attention
-- post-upsampling smoothing to reduce checkerboard artifacts
-- a truncated EqM decay with Charbonnier, FFT, and cosine-direction losses
-
+The implementation in this repo uses a compact custom backbone (`eqmnet2_small`, about `1.3M` parameters).
 
 ## Endoscopy Benchmarks
 
