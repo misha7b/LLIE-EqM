@@ -17,7 +17,7 @@ from src.nafnet.nafnet_arch import NAFNet
 from src.ddpm_unet import DDPMUNet
 from src.tiny_unet.unet import TinyUNet
 from src.ClaudesArchitecture import eqmnet_small, eqmnet_large
-from src.ClaudesArchitecture2 import eqmnet2_small
+from src.eqmnet import eqmnet2_small
 
 from datasets.lol_dataset import LOLPairedDataset
 
