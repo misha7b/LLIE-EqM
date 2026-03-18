@@ -1,16 +1,6 @@
 """
-EqMNet v2 — Improvements over v1:
-  1. Post-PixelShuffle depthwise smoothing to suppress checkerboard artifacts.
-  2. No gamma conditioning (removed entirely).
-  3. 3x3 skip fusion conv (was 1x1) for spatial context when blending scales.
-  4. 3x3 output head (was 1x1) for spatially coherent gradient field.
-
-Checkpoint-compatible with v1 via strict=False:
-  - Gamma-related keys in the old checkpoint are simply ignored.
-  - New smoother layers are identity-initialized (no effect before fine-tuning).
-  - Changed conv shapes (fuse, head) will use fresh random init.
+EqMNet v2
 """
-
 
 import torch
 import torch.nn as nn
