@@ -146,8 +146,40 @@ def generate_big_little(model, x_dark, num_steps=NUM_STEPS, eta=ETA,
 
 
 
+@torch.no_grad()
+def generate_gd_cosine(model, x_dark, num_steps=NUM_STEPS, eta=ETA,
+                       save_steps=False, stop_eps=STOP_EPS):
+    """Gradient Descent with cosine eta schedule — large steps early, small steps late."""
+    y = x_dark.clone()
+    x_k = x_dark.clone()
+    history = [x_k.cpu().clone()] if save_steps else None
+
+    for step in range(num_steps):
+        eta_k = eta * 0.5 * (1 + math.cos(math.pi * step / num_steps))
+
+        pred_grad = model(torch.cat([x_k, y], dim=1))
+        x_new = (x_k - eta_k * pred_grad).clamp(0.0, 1.0)
+
+        if stop_eps is not None:
+            rel_step = (x_new - x_k).norm() / (x_k.norm() + 1e-8)
+            if rel_step < stop_eps:
+                x_k = x_new
+                if save_steps:
+                    history.append(x_k.cpu().clone())
+                print(f"  GD-cosine early stop at step {step} (rel_step={rel_step:.2e})")
+                break
+
+        x_k = x_new
+
+        if save_steps:
+            history.append(x_k.cpu().clone())
+
+    return x_k, history
+
+
 GENERATION_METHODS = {
     "gd": generate_gd,
+    "gd_cosine": generate_gd_cosine,
     "heavy_ball": generate_heavy_ball,
     "nesterov": generate_nesterov,
     "big_little": generate_big_little,

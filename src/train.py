@@ -9,10 +9,10 @@ from torch.utils.data import ConcatDataset
 from tqdm import tqdm
 
 from src.unet.unet_model import UNet
-from src.nafnet.nafnet_arch import NAFNet
-from src.ddpm_unet import DDPMUNet
-from src.tiny_unet.unet import TinyUNet
-from src.ClaudesArchitecture import eqmnet_small, eqmnet_large
+#from src.nafnet.nafnet_arch import NAFNet
+#from src.ddpm_unet import DDPMUNet
+#from src.tiny_unet.unet import TinyUNet
+#from src.ClaudesArchitecture import eqmnet_small, eqmnet_large
 from src.eqmnet import eqmnet2_small
 
 from src.loss import EqMLoss
