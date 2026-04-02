@@ -50,8 +50,8 @@ python -m src.eval
 src/
   train.py            Training loop
   eval.py             Inference and evaluation
-  loss.py             EqM / EqM+ losses
-  eqmnet.py           Default EqM+ backbone (`eqmnet2_small`)
+  loss.py             Losses
+  eqmnet.py           EqM+ architecture (`eqmnet2_small`)
 datasets/
   lol_dataset.py      Paired dataset loader
 img/
