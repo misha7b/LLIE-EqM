@@ -6,18 +6,6 @@ EqM+ adapts [Equilibrium Matching](https://arxiv.org/abs/2510.02300) to paired l
 
 For a paired sample `(x_dark, x_gt)`, EqM+ samples an interpolated state between the low-light image and the target image, and trains a network `v_theta(x_gamma, x_dark)` to predict a scaled direction from `x_gt` back to `x_dark`. At inference time, enhancement starts from `x_dark` itself and applies a small number of gradient-descent steps in the learned field.
 
-## Architecture
-
-<p align="center">
-  <img src="img/eqmnet.svg" alt="EqM+ Architecture" width="50%" />
-</p>
-
-This repo supports two backbones:
-
-**UNet** (`src/unet/`) — standard encoder-decoder baseline adapted from [milesial/Pytorch-UNet](https://github.com/milesial/Pytorch-UNet).
-
-**EqMNet** (`src/eqmnet.py`) — custom architecture, 1.3M parameters.
-
 ## Endoscopy Benchmarks
 
 Reported results on the EndoVis17 and EndoVis18 low-light surgical endoscopy datasets:
@@ -57,6 +45,18 @@ datasets/
 img/
   eqmnet.svg          Model diagram
 ```
+
+## Architecture
+
+<p align="center">
+  <img src="img/eqmnet.svg" alt="EqM+ Architecture" width="50%" />
+</p>
+
+This repo supports two architectures:
+
+**UNet** (`src/unet/`) — UNet adapted from [milesial/Pytorch-UNet](https://github.com/milesial/Pytorch-UNet).
+
+**EqMNet** (`src/eqmnet.py`) — custom architecture, 1.3M parameters.
 
 ## Examples
 
