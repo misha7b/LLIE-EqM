@@ -33,6 +33,8 @@ EqM+ is competitive on both endoscopy benchmarks.
 
 ## Running The Code
 
+Configuration options are in files `src/train.py` and `src/eval.py` respectively.
+
 ```bash
 # Train EqM / EqM+
 python -m src.train
