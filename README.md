@@ -60,15 +60,17 @@ img/
 
 ## Architecture
 
-<p align="center">
-  <img src="img/eqmnet.svg" alt="EqM+ Architecture" width="50%" />
-</p>
-
 This repo supports two architectures:
 
 **UNet** (`src/unet/`) — UNet adapted from [milesial/Pytorch-UNet](https://github.com/milesial/Pytorch-UNet).
 
 **EqMNet** (`src/eqmnet.py`) — custom architecture, 1.3M parameters.
+
+
+<p align="center">
+  <img src="img/eqmnet.svg" alt="EqM+ Architecture" width="50%" />
+</p>
+
 
 
 
