@@ -6,6 +6,18 @@ EqM+ adapts [Equilibrium Matching](https://arxiv.org/abs/2510.02300) to paired l
 
 For a paired sample `(x_dark, x_gt)`, EqM+ samples an interpolated state between the low-light image and the target image, and trains a network `v_theta(x_gamma, x_dark)` to predict a scaled direction from `x_gt` back to `x_dark`. At inference time, enhancement starts from `x_dark` itself and applies a small number of gradient-descent steps in the learned field.
 
+## Examples
+
+<p align="center">
+  <img src="img/8_comparison.png" alt="Comparison example 8" width="48%" />
+  <img src="img/9_comparison.png" alt="Comparison example 9" width="48%" />
+</p>
+
+<p align="center">
+  <img src="img/18_comparison.png" alt="Comparison example 18" width="48%" />
+  <img src="img/101_comparison.png" alt="Comparison example 101" width="48%" />
+</p>
+
 ## Endoscopy Benchmarks
 
 Reported results on the EndoVis17 and EndoVis18 low-light surgical endoscopy datasets:
@@ -58,16 +70,6 @@ This repo supports two architectures:
 
 **EqMNet** (`src/eqmnet.py`) — custom architecture, 1.3M parameters.
 
-## Examples
 
-<p align="center">
-  <img src="img/8_comparison.png" alt="Comparison example 8" width="48%" />
-  <img src="img/9_comparison.png" alt="Comparison example 9" width="48%" />
-</p>
-
-<p align="center">
-  <img src="img/18_comparison.png" alt="Comparison example 18" width="48%" />
-  <img src="img/101_comparison.png" alt="Comparison example 101" width="48%" />
-</p>
 
 
