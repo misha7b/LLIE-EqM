@@ -66,9 +66,10 @@ This repo supports two architectures:
 
 **EqMNet** (`src/eqmnet.py`) — custom architecture, 1.3M parameters.
 
+A (very high-level) diagram of the EqM+ architecture:
 
 <p align="center">
-  <img src="img/eqmnet.svg" alt="EqM+ Architecture" width="50%" />
+  <img src="img/eqmnet_v2_high_level.svg" alt="EqM+ Architecture" width="50%" />
 </p>
 
 
